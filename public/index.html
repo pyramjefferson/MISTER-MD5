@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MISTER-MD • Connecte ton bot WhatsApp</title>
+<style>
+:root{--bg:#0b0f1a;--card:#141a2b;--txt:#e8ecf6;--mut:#8b94ad;--acc:#25d366;--acc2:#128c7e}
+@media(prefers-color-scheme:light){:root{--bg:#eef2f7;--card:#fff;--txt:#111827;--mut:#5b6478}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at top,#16223f,var(--bg) 60%);background-color:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:16px}
+.card{width:100%;max-width:420px;background:var(--card);border-radius:20px;padding:28px 22px;box-shadow:0 10px 40px rgba(0,0,0,.35);text-align:center}
+h1{margin:0 0 4px;font-size:28px;letter-spacing:1px;color:var(--acc)}
+.sub{color:var(--mut);font-size:14px;margin-bottom:22px}
+input{width:100%;padding:14px;border-radius:12px;border:1px solid #2a3350;background:transparent;color:var(--txt);font-size:16px;text-align:center;outline:none}
+input:focus{border-color:var(--acc)}
+button{width:100%;margin-top:12px;padding:14px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:16px;font-weight:600;cursor:pointer}
+button:disabled{opacity:.6}
+#out{margin-top:20px;display:none}
+.code{font-size:34px;font-weight:800;letter-spacing:4px;color:var(--acc);margin:6px 0;word-break:break-all}
+.small{font-size:13px;color:var(--mut);line-height:1.5;text-align:left;margin-top:10px}
+.err{color:#ff5c6c;font-size:14px}
+footer{margin-top:20px;font-size:12px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>MISTER-MD</h1>
+  <div class="sub">Bot WhatsApp • 100 commandes</div>
+  <input id="num" type="tel" inputmode="numeric" placeholder="Ex : 50940217685" autocomplete="off">
+  <button id="btn">Obtenir mon code</button>
+  <div id="out"></div>
+  <div class="small">
+    Entre ton numéro avec l'indicatif du pays, sans <b>+</b> ni espaces.<br>
+    Ensuite : WhatsApp → <b>Appareils connectés</b> → <b>Connecter un appareil</b> → <b>Connecter avec un numéro de téléphone</b> et saisis le code.
+  </div>
+  <footer>👑 ᴍɪsᴛᴇʀ ᴅᴇᴠ • MISTER-MD</footer>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+$('btn').onclick=async()=>{
+  const number=$('num').value.replace(/\D/g,''),out=$('out'),btn=$('btn');
+  out.style.display='block';
+  if(number.length<8){out.innerHTML='<div class="err">Numéro invalide.</div>';return}
+  btn.disabled=true;btn.textContent='Génération…';out.textContent='⏳ Patiente quelques secondes…';
+  try{
+    const r=await fetch('/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({number})});
+    const d=await r.json();
+    if(d.error)out.innerHTML='<div class="err">'+d.error+'</div>';
+    else if(d.connected)out.innerHTML='✅ Ce numéro est déjà connecté. Tape <b>.menu</b> sur WhatsApp.';
+    else{out.innerHTML='<div>Ton code :</div><div class="code" id="c">'+d.code+'</div><div style="font-size:13px;color:var(--mut)">Touche le code pour le copier<br>⏳ Saisis-le dans WhatsApp tout de suite (il expire en 1 à 2 minutes).</div>';
+      $('c').onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(d.code.replace(/-/g,''));}
+  }catch(e){out.innerHTML='<div class="err">Erreur réseau, réessaie.</div>'}
+  btn.disabled=false;btn.textContent='Obtenir mon code';
+};
+</script>
+</body>
+</html>
